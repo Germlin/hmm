@@ -21,13 +21,13 @@ int main()
 	Seq s(sf);
 	s.print();
 
-	/* Test forward */
+	/* Test forward algorithm */
 	cout << forward(h, s) << endl;
 
-	/* Test backward */
+	/* Test backward algorithm */
 	cout << backward(h, s) << endl;
 
-	/* Test Viterbi */
+	/* Test Viterbi algorithm */
 	int *path = viterbi(h, s);
 	for (int t = 0; t < s.T; ++t)
 	{

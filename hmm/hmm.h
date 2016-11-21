@@ -16,7 +16,7 @@ public:
 	friend double backward(HMM&, Seq&);
 	friend int* viterbi(HMM&, Seq&);
 	/* following function is used for Baum-Welch algorithm */
-	friend void computeAlpha(HMM&, Seq&, double **);
+	friend void computeAlpha(HMM&, Seq&, double**);
 	friend void computeBeta(HMM&, Seq&, double**);
 	friend void computeXi(HMM&, Seq&, double**, double**, double***);
 	friend void computeGamma(HMM&, Seq&, double**, double**, double**);

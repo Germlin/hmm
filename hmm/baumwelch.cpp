@@ -87,6 +87,16 @@ void computeGamma(HMM &h, Seq &s, double **alpha, double **beta, double **gamma)
 	}
 }
 
+double computeProb(double **alpha, int N, int T)
+{
+	double sum = 0;
+	for (int i = 0; i < N; ++i)
+	{
+		sum += alpha[i][T - 1];
+	}
+	return sum;
+}
+
 void baumWelch(HMM &h, Seq &s, double DELTA)
 {
 	double **gamma = matrix<double>(0, h.N, s.T);
@@ -106,6 +116,64 @@ void baumWelch(HMM &h, Seq &s, double DELTA)
 	computeBeta(h, s, beta);
 	computeGamma(h, s, alpha, beta, gamma);
 	computeXi(h, s, alpha, beta, xi);
+
+	double probprev = computeProb(alpha, h.N, s.T);
+	double prob = 0;
+	double delta = 0;
+
+	do
+	{
+		/* update A */
+		for (int i = 0; i < h.N; ++i)
+		{
+			for (int j = 0; j < h.N; ++j)
+			{
+				double numerator = 0;
+				double denominator = 0;
+				for (int t = 0; t < s.T - 1; ++t)
+				{
+					numerator += xi[t][i][j];
+					denominator += gamma[i][t];
+				}
+				h.A[i][j] = numerator / denominator;
+			}
+		}
+
+		/* update B */
+		for (int j = 0; j < h.N; ++j)
+		{
+			for (int k = 0; k < h.M; ++k)
+			{
+				double numerator = 0;
+				double denominator = 0;
+				for (int t = 0; t < s.T; ++t)
+				{
+					if (s.O[t] == k)
+					{
+						numerator += gamma[j][t];
+					}
+					denominator += gamma[j][t];
+				}
+				h.B[j][k] = numerator / denominator;
+			}
+		}
+
+		/* update pi */
+		for (int i = 0; i < h.N; ++i)
+		{
+			h.pi[i] = gamma[i][1];
+		}
+
+		computeAlpha(h, s, alpha);
+		computeBeta(h, s, beta);
+		computeGamma(h, s, alpha, beta, gamma);
+		computeXi(h, s, alpha, beta, xi);
+
+		prob = computeProb(alpha, h.N, s.T);
+		delta = prob - probprev;
+		probprev = prob;
+
+	} while (delta > DELTA);
 
 	/* free memeroy */
 	for (int i = 0; i < s.T; ++i)
